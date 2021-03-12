@@ -176,15 +176,16 @@ class Inceptionx2(nn.Module):
         )
         self.subbranch2_2 = nn.Sequential(
             nn.Conv2d(in_channels=out_fts[2] // 4, out_channels=out_fts[3], kernel_size=(3, 1), stride=(1, 1),
-                      padding=(3 // 2,0))
+                      padding=(3 // 2, 0))
         )
         self.branch3 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(3,3), stride=(1,1), padding=1),
-            nn.Conv2d(in_channels=in_fts, out_channels=out_fts[4], kernel_size=(1,1), stride=(1,1))
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1), padding=1),
+            nn.Conv2d(in_channels=in_fts, out_channels=out_fts[4], kernel_size=(1, 1), stride=(1, 1))
         )
         self.branch4 = nn.Sequential(
-            nn.Conv2d(in_channels=in_fts, out_channels=out_fts[5], kernel_size=(1,1), stride=(1,1))
+            nn.Conv2d(in_channels=in_fts, out_channels=out_fts[5], kernel_size=(1, 1), stride=(1, 1))
         )
+
     def forward(self, input_img):
         o1 = self.branch1(input_img)
         o11 = self.subbranch1_1(o1)
@@ -194,13 +195,14 @@ class Inceptionx2(nn.Module):
         o22 = self.subbranch2_2(o2)
         o3 = self.branch3(input_img)
         o4 = self.branch4(input_img)
-        x = torch.cat([o11,o12,o21,o22,o3,o4], dim=1)
+        x = torch.cat([o11, o12, o21, o22, o3, o4], dim=1)
         return x
+
 
 class AuxClassifier(nn.Module):
     def __init__(self, in_fts, num_classes):
         super(AuxClassifier, self).__init__()
-        self.pool = nn.AdaptiveAvgPool2d(output_size=(5,5))
+        self.pool = nn.AdaptiveAvgPool2d(output_size=(5, 5))
         self.conv = nn.Conv2d(in_channels=in_fts, out_channels=128, kernel_size=(1, 1))
         self.classifier = nn.Sequential(
             nn.Linear(5 * 5 * 128, 1024),
@@ -212,9 +214,10 @@ class AuxClassifier(nn.Module):
         N = x.shape[0]
         x = self.pool(x)
         x = self.conv(x)
-        x = x.reshape(N,-1)
+        x = x.reshape(N, -1)
         x = self.classifier(x)
         return x
+
 
 class MyInception_v3(nn.Module):
     def __init__(self, in_fts=3, num_classes=1000):
@@ -235,22 +238,30 @@ class MyInception_v3(nn.Module):
         self.conv4 = nn.Conv2d(in_channels=64, out_channels=80, kernel_size=(3, 3), stride=(1, 1))
         self.conv5 = nn.Conv2d(in_channels=80, out_channels=192, kernel_size=(3, 3), stride=(2, 2))
         self.conv6 = nn.Conv2d(in_channels=192, out_channels=288, kernel_size=(3, 3), stride=(1, 1), padding=1)
-        self.inceptx3_1 = Inceptionx3(in_fts=288, out_fts=[96, 96, 96, 96])
-        self.inceptx3_2 = Inceptionx3(in_fts=4 * 96, out_fts=[96, 96, 96, 96])
-        self.inceptx3_3 = Inceptionx3(in_fts=4 * 96, out_fts=[96, 96, 96, 96])
+
+        list_incept = [Inceptionx3(in_fts=288, out_fts=[96, 96, 96, 96]),
+                       Inceptionx3(in_fts=4 * 96, out_fts=[96, 96, 96, 96]),
+                       Inceptionx3(in_fts=4 * 96, out_fts=[96, 96, 96, 96])]
+
+        self.inceptx3 = nn.Sequential(*list_incept)
         self.grid_redn_1 = GridReduction(in_fts=4 * 96, out_fts=384)
         self.aux_classifier = AuxClassifier(768, num_classes)
-        self.inceptx5_1 = Inceptionx5(in_fts=768, out_fts=[160, 160, 160, 160])
-        self.inceptx5_2 = Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160])
-        self.inceptx5_3 = Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160])
-        self.inceptx5_4 = Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160])
-        self.inceptx5_5 = Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160])
-        self.grid_redn_2 = GridReduction(in_fts=4 * 160, out_fts=640)
-        self.inceptx2_1 = Inceptionx2(in_fts=1280, out_fts=[256, 256, 192, 192, 64, 64])
-        self.inceptx2_2 = Inceptionx2(in_fts=1024, out_fts=[384, 384, 384, 384, 256, 256])
-        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1,1))
-        self.fc = nn.Linear(2048,num_classes)
 
+        list_incept = [Inceptionx5(in_fts=768, out_fts=[160, 160, 160, 160]),
+                       Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160]),
+                       Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160]),
+                       Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160]),
+                       Inceptionx5(in_fts=4 * 160, out_fts=[160, 160, 160, 160])]
+
+        self.inceptx5 = nn.Sequential(*list_incept)
+        self.grid_redn_2 = GridReduction(in_fts=4 * 160, out_fts=640)
+
+        list_incept = [Inceptionx2(in_fts=1280, out_fts=[256, 256, 192, 192, 64, 64]),
+                       Inceptionx2(in_fts=1024, out_fts=[384, 384, 384, 384, 256, 256])]
+
+        self.inceptx2 = nn.Sequential(*list_incept)
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.fc = nn.Linear(2048, num_classes)
 
     def forward(self, input_img):
         N = input_img.shape[0]
@@ -261,24 +272,17 @@ class MyInception_v3(nn.Module):
         x = self.conv4(x)
         x = self.conv5(x)
         x = self.conv6(x)
-        x = self.inceptx3_1(x)
-        x = self.inceptx3_2(x)
-        x = self.inceptx3_3(x)
+        x = self.inceptx3(x)
         x = self.grid_redn_1(x)
         aux_out = self.aux_classifier(x)
-        x = self.inceptx5_1(x)
-        x = self.inceptx5_2(x)
-        x = self.inceptx5_3(x)
-        x = self.inceptx5_4(x)
-        x = self.inceptx5_5(x)
+        x = self.inceptx5(x)
         x = self.grid_redn_2(x)
-        x = self.inceptx2_1(x)
-        x = self.inceptx2_2(x)
+        x = self.inceptx2(x)
         x = self.avgpool(x)
-        x = x.reshape(N,-1)
+        x = x.reshape(N, -1)
         x = self.fc(x)
         if self.training:
-            return [x,aux_out]
+            return [x, aux_out]
         else:
             return x
 

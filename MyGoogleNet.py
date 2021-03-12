@@ -136,7 +136,7 @@ class MyGoogleNet(nn.Module):
 
 
 if __name__ == '__main__':
-    # Temporay define data and target
+    # Temporary define data and target
     batch_size = 5
     x = torch.randn((batch_size, 3, 224, 224))
     y = torch.randint(0,1000, (batch_size,))
