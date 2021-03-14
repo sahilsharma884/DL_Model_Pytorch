@@ -193,8 +193,8 @@ class MyResNet(nn.Module):
 if __name__ == '__main__':
     x = torch.randn((5, 3, 224, 224))
 
-    m = MyResNet(layer_name='50')
-    writer = SummaryWriter('logs/resnet_50')
+    m = MyResNet(layer_name='101')
+    writer = SummaryWriter('logs/resnet_101')
     writer.add_graph(m, x)
     writer.close()
     # print(m)
