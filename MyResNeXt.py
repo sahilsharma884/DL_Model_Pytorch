@@ -75,7 +75,7 @@ class MyResNeXt(nn.Module):
 
         out_fts = num_filters * expansion
 
-        self.conv2 = self.architecture(64,out_fts, num_times[0])
+        self.conv2 = self.architecture(64, out_fts, num_times[0])
         self.conv_channel_2 = ConvBlock(64, out_fts, 1, 1, 0, False)
 
         in_fts = out_fts
@@ -143,7 +143,7 @@ class MyResNeXt(nn.Module):
     def architecture(self, in_fts, out_fts, num_times, downsample=False):
         list_conv = [CardinalityBlock(in_fts, out_fts, downsample)]
 
-        for i in range(1,num_times):
+        for i in range(1, num_times):
             list_conv.append(CardinalityBlock(out_fts, out_fts))
 
         return nn.Sequential(*list_conv)
@@ -152,7 +152,7 @@ class MyResNeXt(nn.Module):
 if __name__ == '__main__':
     x = torch.randn((5, 3, 224, 224))
     writer = SummaryWriter('logs/resnext_101')
-    m = MyResNeXt(num_times=[3,4,23,3], num_classes=10)
+    m = MyResNeXt(num_times=[3, 4, 23, 3], num_classes=10)
     writer.add_graph(m, x)
     writer.close()
     # print(m)
