@@ -170,5 +170,5 @@ if __name__ == "__main__":
             (6,320,1,1)
         ]
 
-    m = MyMobileNet_v2(bottleneckLayerDetails, width_multiplier=1)
-    summary(m, (1,3,224,224))
+    model = MyMobileNet_v2(bottleneckLayerDetails, width_multiplier=1)
+    summary(model, (1,3,224,224))
