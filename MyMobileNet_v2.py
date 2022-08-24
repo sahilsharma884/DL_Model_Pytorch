@@ -75,8 +75,6 @@ class NetForStrideTwo(nn.Module):
         self.dw = DepthWise_Conv(expansion*in_fts, stride=(2,2))
         self.pw = Pointwise_Conv(expansion*in_fts, out_fts)
 
-        self.in_fts = in_fts
-        self.out_fts = out_fts
         self.expansion = expansion
 
     def forward(self, input_image):
