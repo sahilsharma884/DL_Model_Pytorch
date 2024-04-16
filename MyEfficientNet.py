@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 from torchvision.ops import StochasticDepth
-from torchvision import transforms
-
-from torchsummary import summary
 
 from collections import OrderedDict
 from torch.utils.tensorboard import SummaryWriter
